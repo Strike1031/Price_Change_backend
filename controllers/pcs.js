@@ -12,8 +12,8 @@ var timer = 0;
  */
 export async function monitorChange() {
   var pairs = await tx.distinct("pairAddress");
-  //cron jobs--token change prices It is running every 5 seconds
-  cron.schedule("*/5 * * * * *", async () => {
+  //cron jobs--token change prices It is running every second
+  cron.schedule("*/1 * * * * *", async () => {
     //console.log('running every 5 seconds:');
     if (timer == 0)  change(pairs);
   });
@@ -21,7 +21,7 @@ export async function monitorChange() {
 
 async function change(pairs) {
   timer = 1;
-  console.log("change--{function} started!");
+ // console.log("change--{function} started!");
   for (let i = 0; i < pairs.length; i++) {
     await priceChange(pairs[i]).then((data) => {
       console.log("---------------------");
@@ -145,7 +145,7 @@ async function priceChange(address) {
   result.txns = "";
   result.liquidity = "";
 
-  console.log("5m_PriceChange");
+//  console.log("5m_PriceChange");
   /**
    *   5m_PriceChange Aggregation
    */
@@ -193,7 +193,7 @@ async function priceChange(address) {
       price1Open_5m > price1Close_5m ? `-${percDiff1_5m}` : `+${percDiff1_5m}`;
   }
 
-  console.log("1h_PriceChange");
+//  console.log("1h_PriceChange");
   /**
    *   1h_PriceChange Aggregation
    */
@@ -240,7 +240,7 @@ async function priceChange(address) {
       price1Open_1h > price1Close_1h ? `-${percDiff1_1h}` : `+${percDiff1_1h}`;
   }
 
-  console.log("6h_PriceChange");
+ // console.log("6h_PriceChange");
   /**
    *   6h_PriceChange Aggregation
    */

@@ -48,9 +48,9 @@ app.use('/', indexRouter);
 app.use('/api', apiRouter);
 
 
-//MongoDB connection
-const {mainDB} = Config();
-mongoose.connect(mainDB);
+// //MongoDB connection
+// const {mainDB} = Config();
+// mongoose.connect(mainDB);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

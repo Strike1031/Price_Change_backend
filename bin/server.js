@@ -9,10 +9,15 @@ import app from '../app.js';
 // var debug = require('debug')('Token-Price-change-backend:server');
 // var http = require('http');
 import http from 'http';
-
+import mongoose from 'mongoose';
+import Config from '../config.js';
 /**
  * Get port from environment and store in Express.
  */
+
+//MongoDB connection
+const {mainDB} = Config();
+mongoose.connect(mainDB);
 
 var port = normalizePort(process.env.PORT || '8000');
 app.set('port', port);
