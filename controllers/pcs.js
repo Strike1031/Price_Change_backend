@@ -151,17 +151,55 @@ async function eachPriceChange(address, monitorTime, result) {
       result.txns = "";
       result.liquidity = "";
     } else {
-      switch(monitorTime) {
+      switch (monitorTime) {
         case 300:
-          result.priceChange_5m = price1Open > price1Close ? `-${percDiff1}` : `+${percDiff1}`;
+          result.priceChange_5m =
+            price1Open > price1Close ? `-${percDiff1}` : `+${percDiff1}`;
           break;
         case 3600:
-          result.priceChange_1h = price1Open > price1Close ? `-${percDiff1}` : `+${percDiff1}`;
+          result.priceChange_1h =
+            price1Open > price1Close ? `-${percDiff1}` : `+${percDiff1}`;
           break;
         case 21600:
-          result.priceChange_6h = price1Open > price1Close ? `-${percDiff1}` : `+${percDiff1}`;
+          result.priceChange_6h =
+            price1Open > price1Close ? `-${percDiff1}` : `+${percDiff1}`;
           break;
       }
     }
   }
+}
+
+/**
+ *   Aggregation
+ *   Every X time all data from WBNB/BUSD pair
+ *   group by blockNumber and get last price
+ */
+export function getBNBPriceByBlock() {
+  tx.aggregate([
+    {
+      $match: {
+        $and: [
+          {
+            symbol0: "BUSD",
+          },
+          {
+            symbol1: "WBNB",
+          },
+        ],
+      },
+    },
+    {
+      $group: {
+        _id: "$blockNumber",
+        reserves0: {
+          $last: "$reserves0",
+        },
+        reserves1: {
+          $last: "$reserves1",
+        },
+      },
+    },
+  ]).then((data) => {
+     console.log(data);
+  });
 }
