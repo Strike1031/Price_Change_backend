@@ -1,4 +1,5 @@
 import tx from "../models/tx.js";
+import Change from "../models/change.js";
 import errorHandler from "../errorHandler.js";
 import { getSupply, getDecimals } from "../components/nodeRequests.js";
 import cron from "node-cron";
@@ -12,6 +13,7 @@ var timer = 0;
  */
 export async function monitorChange() {
   var pairs = await tx.distinct("pairAddress");
+  console.log("Total count of pairs: "+pairs.length);
   //cron jobs--token change prices It is running every second
   cron.schedule("*/1 * * * * *", async () => {
     //console.log('running every 5 seconds:');
@@ -23,10 +25,37 @@ async function change(pairs) {
   timer = 1;
   // console.log("change--{function} started!");
   for (let i = 0; i < pairs.length; i++) {
-    await priceChange(pairs[i]).then((data) => {
+    await priceChange(pairs[i]).then(async (data) => {
       console.log("---------------------");
       console.log(data);
       console.log("---------------------");
+      const findOne = await Change.findOne({
+        $and: [
+          { token0Symbol: data.token0Symbol },
+          { token1Symbol: data.token1Symbol },
+        ],
+      });
+      if (findOne) {
+        try {
+          await Change.replaceOne(
+            {
+              token0Symbol: data.token0Symbol,
+              token1Symbol: data.token1Symbol,
+            },
+            data
+          ); 
+        } catch (error) {
+          console.log('Update Field Error!');
+        }
+      } else {
+        //New Field
+        const saveToDatabase = new Change(data);
+        try {
+          await saveToDatabase.save(); 
+        } catch (error) {
+          console.log('New Field Insertion Error!');
+        }
+      }
     });
     if (i == pairs.length - 1) timer = 0;
   }
@@ -51,6 +80,8 @@ async function priceChange(address) {
     volume: "0",
     txns: "0",
     liquidity: "0",
+    dex: "",
+    network: "",
   };
 
   for (let i = 0; i < m_monitorTimes.length; i++) {
@@ -150,6 +181,8 @@ async function eachPriceChange(address, monitorTime, result) {
       result.marketCap = "";
       result.txns = "";
       result.liquidity = "";
+      result.dex = dex;
+      result.network = network;
     } else {
       switch (monitorTime) {
         case 300:
@@ -200,6 +233,11 @@ export function getBNBPriceByBlock() {
       },
     },
   ]).then((data) => {
-     console.log(data);
+    console.log(data);
   });
+}
+
+export async function getTableData() {
+  const data = await Change.find({});
+  return data;
 }
